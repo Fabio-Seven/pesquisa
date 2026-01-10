@@ -32,32 +32,59 @@ def save_excel(df, file_name):
     df.to_excel(os.path.join(DATA_DIR, file_name), index=False, engine='openpyxl')
 
 # Rota para página inicial (login)
+# LOGIN PARA TESTE OFFLINE. TIREI PARA O LOGIN ABAIXO ONLINE
+# @app.route("/", methods=["GET", "POST"])
+#def index():
+    #if request.method == "POST":
+        #nome_usuario = request.form["nome_usuario"]
+        #senha = request.form["senha"].encode('utf-8')
+        #usuarios = load_excel("Usuarios.xlsx")
+        #usuario = usuarios[usuarios["Nome_Usuario"] == nome_usuario]
+        #print(f"Usuário encontrado: {usuario.to_dict() if not usuario.empty else 'Nenhum'}")  # Depuração
+        #if not usuario.empty:
+            #senha_hashed = usuario.iloc[0]["Senha"].encode('utf-8')
+            #print(f"Senha no banco: {senha_hashed}")  # Depuração
+            #if bcrypt.checkpw(senha, senha_hashed):
+                #session["nome_usuario"] = nome_usuario  # Armazena o usuário na sessão
+                #flash("Login bem-sucedido!", "success")
+                #tipo = usuario.iloc[0]["Tipo"]
+                #if tipo == "Admin":
+                    #return redirect(url_for("questionario"))
+                    ##return redirect(url_for("admin"))    # LINHA ORIGINAL
+                #elif tipo == "Consultor":
+                    #return redirect(url_for("questionario"))
+                #else:
+                    #return redirect(url_for("cadastro_aluno"))
+            #else:
+                #flash("Senha inválida!", "danger")
+        #else:
+            #flash("Usuário não encontrado!", "danger")
+    #return render_template("index.html")
+
+# NOVA ROTA DE LOGIN PARA TESTE ONLINE
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
-        nome_usuario = request.form["nome_usuario"]
+        nome_usuario = request.form["nome_usuario"].strip()
         senha = request.form["senha"].encode('utf-8')
-        usuarios = load_excel("Usuarios.xlsx")
-        usuario = usuarios[usuarios["Nome_Usuario"] == nome_usuario]
-        print(f"Usuário encontrado: {usuario.to_dict() if not usuario.empty else 'Nenhum'}")  # Depuração
-        if not usuario.empty:
-            senha_hashed = usuario.iloc[0]["Senha"].encode('utf-8')
-            print(f"Senha no banco: {senha_hashed}")  # Depuração
+
+        # Usuários de teste (remova depois ou use planilha criptografada)
+        usuarios_teste = {
+            "admin": bcrypt.hashpw("admin10".encode('utf-8'), bcrypt.gensalt()),
+            "teste": bcrypt.hashpw("1234".encode('utf-8'), bcrypt.gensalt())
+        }
+
+        if nome_usuario in usuarios_teste:
+            senha_hashed = usuarios_teste[nome_usuario]
             if bcrypt.checkpw(senha, senha_hashed):
-                session["nome_usuario"] = nome_usuario  # Armazena o usuário na sessão
+                session["nome_usuario"] = nome_usuario
                 flash("Login bem-sucedido!", "success")
-                tipo = usuario.iloc[0]["Tipo"]
-                if tipo == "Admin":
-                    return redirect(url_for("questionario"))
-                    #return redirect(url_for("admin"))    # LINHA ORIGINAL
-                elif tipo == "Consultor":
-                    return redirect(url_for("questionario"))
-                else:
-                    return redirect(url_for("cadastro_aluno"))
+                return redirect(url_for("questionario"))  # ou "admin"
             else:
                 flash("Senha inválida!", "danger")
         else:
             flash("Usuário não encontrado!", "danger")
+
     return render_template("index.html")
 
 
