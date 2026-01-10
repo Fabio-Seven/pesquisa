@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title %}Gerenciar Usuários{% endblock %}
+{% block content %}
+<h2>GERENCIAMENTO DE USUÁRIOS</h2>
+<!--<p><strong>Logado como:</strong> {{ usuario_logado }} (Admin)</p>-->
+
+<p>
+    <strong>Logado como:</strong> {{ usuario_logado }} (Admin)
+    <a href="{{ url_for('logout') }}" class="btn btn-secondary btn-sm ms-3">Sair</a>
+</p>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<!-- <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#modalUsuario">+ Adicionar Usuário</button>-->
+<button type="button" class="btn btn-primary mb-3" id="btnAdicionarUsuario">
+    + Adicionar Usuário
+</button>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Código</th>
+            <th>Login</th>
+            <th>Nome Completo</th>
+            <th>Tipo</th>
+            <th>Data Cadastro</th>
+            <th>Dica Senha</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for u in usuarios %}
+        <tr>
+            <td>{{ u.Codigo }}</td>
+            <td>{{ u.Nome_Usuario }}</td>
+            <td>{{ u.Usuario }}</td>
+            <td>{{ u.Tipo }}</td>
+            <td>{{ u.Data_cadastro }}</td>
+            <td>{{ u.Dica }}</td>
+            <td>
+                <button class="btn btn-sm btn-warning" 
+                        type="button"
+                        data-usuario='{{ u | tojson }}'>
+                    Editar
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="excluirUsuario({{ u.Codigo }})">Excluir</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Modal para Adicionar/Editar -->
+<div class="modal fade" id="modalUsuario" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Adicionar Usuário</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="acao" id="acao" value="adicionar">
+                    <input type="hidden" name="codigo" id="codigo">
+                    
+                    <div class="mb-3">
+                        <label>Nome de Login</label>
+                        <input type="text" name="nome_usuario" id="nome_usuario" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Nome Completo</label>
+                        <input type="text" name="usuario" id="usuario" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Tipo</label>
+                        <select name="tipo" id="tipo" class="form-select" required>
+                            <option value="Admin">Admin</option>
+                            <option value="Consultor">Consultor</option>
+                            <option value="Operador">Operador</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label>Dica de Senha</label>
+                        <input type="text" name="dica" id="dica" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label>Senha</label>
+                        <input type="password" name="senha" id="senha" class="form-control" required>
+                        <small>Deixe em branco para manter a senha atual (apenas em edição)</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modalElement = document.getElementById('modalUsuario');
+        const modal = new bootstrap.Modal(modalElement);
+
+        // + Adicionar Usuário
+        const btnAdicionar = document.getElementById('btnAdicionarUsuario');
+        if (btnAdicionar) {
+            btnAdicionar.addEventListener('click', function () {
+                document.getElementById('acao').value = 'adicionar';
+                document.getElementById('codigo').value = '';
+                document.getElementById('modalTitle').textContent = 'Adicionar Usuário';
+                modalElement.querySelector('form').reset();
+                document.getElementById('senha').required = true;
+                document.getElementById('senha').value = '';
+                modal.show();
+            });
+        }
+
+        // Botões Editar
+        document.querySelectorAll('[data-usuario]').forEach(button => {
+            button.addEventListener('click', function () {
+                const usuarioJson = this.getAttribute('data-usuario');
+                const u = JSON.parse(usuarioJson);
+
+                document.getElementById('acao').value = 'editar';
+                document.getElementById('codigo').value = u.Codigo;
+                document.getElementById('nome_usuario').value = u.Nome_Usuario;
+                document.getElementById('usuario').value = u.Usuario;
+                document.getElementById('tipo').value = u.Tipo;
+                document.getElementById('dica').value = u.Dica || '';
+                document.getElementById('senha').value = '';
+                document.getElementById('senha').required = false;
+                document.getElementById('modalTitle').textContent = 'Editar Usuário - ' + u.Nome_Usuario;
+
+                modal.show();
+            });
+        });
+    });
+
+    // Excluir (fora do DOMContentLoaded porque usa onclick inline)
+    function excluirUsuario(codigo) {
+        if (confirm("Tem certeza que deseja excluir este usuário?")) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.innerHTML = `
+                <input type="hidden" name="acao" value="excluir">
+                <input type="hidden" name="codigo" value="${codigo}">
+            `;
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+</script>
+
+{% endblock %}

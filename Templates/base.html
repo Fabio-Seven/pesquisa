@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        @media (max-width: 767.98px) {
+            body {
+                font-size: 1.2rem;
+            }
+            .form-control, .form-control-file, .btn, label {
+                font-size: 1.2rem;
+            }
+            textarea.form-control {
+                font-size: 1.2rem;
+            }
+            .form-check-label {
+                font-size: 1.2rem;
+            }
+            footer p {
+                font-size: 1.2rem;
+            }
+            h2 {
+                font-size: 1.8rem;
+            }
+        }
+        .btn-primary {
+            background-color: #fa6f39;
+            color: #FFFFFF;
+            border-color: #000000;
+        }
+        .btn-primary:hover {
+            background-color: #137652;
+            border-color: #000000;
+        }
+        .btn-success {
+            background-color: #fa6f39;
+            color: #FFFFFF;
+            border-color: #000000;
+        }
+        .btn-success:hover {
+            background-color: #137652;
+            border-color: #137652;
+        }
+        .btn-secondary {
+            background-color: #f70202;
+            color: #FFFFFF;
+            border-color: #4A4A4A;
+        }
+        .btn-secondary:hover {
+            background-color: #333333;
+            border-color: #333333;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <header class="text-center py-3">
+        <img src="{{ url_for('static', filename='images/logo-ok.png') }}" alt="Logomarca do Projeto" class="img-fluid" style="max-width: 200px;">
+    </header>
+    <div class="container mt-5">
+        {% block content %}{% endblock %}
+    </div>
+    <footer class="bg-light text-center py-3 mt-4">
+        <p>Endereço: Avenida Desembargador Moreira, 2930, Aldeota, Fortaleza - CE</p>
+    </footer>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
