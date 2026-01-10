@@ -1,0 +1,757 @@
+{% extends "base.html" %}
+{% block title %}Questionário{% endblock %}
+{% block content %}
+    <h2>FORMULÁRIO</h2>
+    {% if usuario %}
+        <p class="text-muted">Login: {{ usuario }}</p>
+    {% endif %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <form method="POST" enctype="multipart/form-data">
+        <!-- TEXTO COM FONTE MAIOR E NEGRITO
+            <h3 style="font-weight: bold; margin-bottom: 20px;">INICIO DE QUESTIONÁRIO</h3>
+        -->
+        <!-- INICIO CAMPO DATA MANUAL -->
+        <!-- <div class="form-group">
+            <label for="data">Data *</label> -->
+            <!-- COMO COLOCAR FONTE NEGRITO
+            <label for="data" style="font-weight: bold;">Data da Visita *</label> 
+            -->
+            <!--<input type="date" name="data" id="data" class="form-control" required>
+        </div>-->
+        <!-- FIN CAMPO DATA MANUAL -->
+
+        <!-- CAMPO DATA AUTOMÁTICA (ESCONDIDO) -->
+        <input type="hidden" name="data" id="data" value="">
+
+        <!-- CAMPO HORÁRIO AUTOMÁTICO (ESCONDIDO) -->
+        <input type="hidden" name="horario_fim" id="horario_fim" value="">
+
+        <!-- INICIO da PEQUISA -->
+        <!-- DA FORMA ABAIXO O HTML ADICIONA UMA LINHA QUANDO TECLAR ENTER -->
+        <!-- <div class="form-group">
+            <label for="nome">Nome</label>
+            <textarea name="nome" id="nome" class="form-control" rows="1" maxlength="100" placeholder="Digite até 100 caracteres"></textarea>
+        </div> -->
+        <!-- FIM CAMPO NOME -->
+        <!-- INICIO CAMPO NOME ONDE TECLAR ENTER VAI PRA PROXIMO CAMPO -->
+        <div class="form-group">
+            <label for="nome">Nome</label>
+            <input type="text" name="nome" id="nome" class="form-control" maxlength="100" 
+                   placeholder="Digite o nome completo" autocomplete="off">
+        </div>
+        <!-- FIM CAMPO NOME -->
+        <!-- INICIO CAMPO NUM TITULO -->
+        <!-- CODIGO ANTIGO CAMPO LIVRE -->
+        <!-- <div class="form-group">
+            <label for="titulo">Núm. Título</label>
+            <input type="text" name="titulo" id="titulo" class="form-control" maxlength="16" 
+                   placeholder="Digite o número do Título" autocomplete="off">
+        </div>-->
+
+        <!-- CAMPO NÚMERO DO TÍTULO PARAMETRIZADO -->
+        <!--<div class="form-group">
+            <label for="titulo">Núm. Título</label>
+            <input type="text" 
+                name="titulo" 
+                id="titulo" 
+                class="form-control" 
+                maxlength="16" 
+                pattern="[0-9]{16}" 
+                inputmode="numeric"
+                placeholder="Digite apenas os números"
+                autocomplete="off"
+                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,16)">
+        </div>-->
+        <!-- FIN CAMPO NUM TITULO -->
+
+        <!-- NOVO CAMPO NÚMERO DO TÍTULO PARAMETRIZADO -->
+        <div class="form-group">
+            <label for="titulo">Núm. Título</label>
+            <input type="text" 
+                   name="titulo" 
+                   id="titulo" 
+                   class="form-control" 
+                   maxlength="16"
+                   minlength="8"
+                   pattern="[0-9]{8,16}"
+                   inputmode="numeric"
+                   placeholder="Digite de 8 a 16 números"
+                   autocomplete="off"
+                   oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,16)">
+                   <!--required-->   <!-- opcional: torna obrigatório -->
+        </div>
+
+        <!--<div class="form-group">
+            <label>Biometria ?</label>
+            <div>-->
+                <!-- <input type="radio" name="prof_uniforme" value="Sim" class="form-check-input" required> Sim -->
+                <!--<input type="radio" name="biometria" value="Não" class="form-check-input"> Não -->
+                <!--<input type="radio" name="biometria" value="Sim"> Sim
+                <input type="radio" name="biometria" value="Não"> Não
+            </div>
+        </div>-->
+        <!-- INICIO cAMPO BIOMETRIA -->
+        <div class="form-group">
+            <label>Biometria ?</label>
+            <div class="d-flex align-items-center">
+                <div class="form-check form-check-inline me-5">
+                    <input type="radio" name="biometria" value="Sim" class="form-check-input" id="biometria_sim">
+                    <label class="form-check-label" for="biometria_sim">Sim</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input type="radio" name="biometria" value="Não" class="form-check-input" id="biometria_nao">
+                    <label class="form-check-label" for="biometria_nao">Não</label>
+                </div>
+            </div>
+        </div>
+        <!-- FIN cAMPO BIOMETRIA -->
+
+        <!-- INICIO CAMPO NASCIMENTO -->
+        <!-- CAMPO NASCIMENTO LIVRE -->
+        <!--<div class="form-group">
+            <label for="nascimento">Nascimento </label>-->
+            <!-- COMO COLOCAR FONTE NEGRITO
+            <label for="data" style="font-weight: bold;">Data da Visita *</label> 
+            -->
+            <!-- LINHA ANTIGA DO INPUT DA DATA NASCIMENTO -->
+            <!-- <input type="date" name="nascimento" id="nascimento" class="form-control"> -->
+            <!--<input type="date" 
+                    name="nascimento" 
+                    id="nascimento" 
+                    class="form-control"
+                    value="1995-01-01">-->   <!-- DATA PADRÃO: 01/01/1995 -->
+            <!--</div>-->
+
+        <!-- CAMPO NASCIMENTO PARAMETRIZADO -->
+        <div class="form-group">
+            <label for="nascimento">Nascimento</label>
+            <input type="date" 
+                name="nascimento" 
+                id="nascimento" 
+                class="form-control"
+                value="1995-01-01"     <!-- abre em 1995 como antes -->
+                <!--min="1926-01-02" -->      <!-- não permite antes de 1926 (100 anos) -->
+                <!--max="2010-01-02" -->      <!-- não permite depois de 2010 (mínimo 16 anos em 2026) -->
+                Atenção="A Idade deve ser entre 16 e 100 anos"
+                <!--required>-->
+        </div>
+
+        <!-- FIN CAMPO NASCIMENTO-->
+        <!-- INICIO CAMPO cPF-->
+        <!-- CODIGO CAMPO cPF LIVRE-->
+        <!--<div class="form-group">
+            <label for="cpf">CPF</label>
+            <input type="text" name="cpf" id="cpf" class="form-control" maxlength="12" 
+                   placeholder="Digite o número do CPF" autocomplete="off">
+        </div>-->
+
+        <!-- CAMPO CPF PARAMETRIZADO -->
+        <!--<div class="form-group">
+            <label for="cpf">CPF</label>
+            <input type="text" 
+                name="cpf" 
+                id="cpf" 
+                class="form-control" 
+                maxlength="11" 
+                pattern="[0-9]{11}" 
+                inputmode="numeric"
+                placeholder="Digite apenas os números"
+                autocomplete="off"
+                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,11)">
+        </div>-->
+        <!-- FIN CAMPO CPF -->
+
+        <!-- NOVO CAMPO CPF PARAMETRIZADO -->
+        <div class="form-group">
+            <label for="cpf">CPF</label>
+            <input type="text" 
+                   name="cpf" 
+                   id="cpf" 
+                   class="form-control" 
+                   maxlength="11"
+                   minlength="6"
+                   pattern="[0-9]{6,11}"
+                   inputmode="numeric"
+                   placeholder="Digite de 6 a 11 números"
+                   autocomplete="off"
+                   oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,16)">
+                   <!--required-->   <!-- opcional: torna obrigatório -->
+        </div>
+        <!-- FIN NOVO CAMPO CPF PARAMETRIZADO -->
+
+        <!-- INI ZONA E SECAO (DEPENDENTE) -->
+        <div class="form-group">
+            <label for="zona">Zona Eleitoral *</label>
+            <select name="zona" id="zona" class="form-select" required onchange="carregarSecoes()">
+                <option value="">Selecione a Zona</option>
+                {% for zona in zonas %}
+                    <option value="{{ zona }}">{{ zona }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="secao">Seção</label>
+            <select name="secao" id="secao" class="form-select" onchange="mostrarDetalhesSecao()" disabled>
+                <option value="">Primeiro selecione a Zona</option>
+            </select>
+                    
+            <div id="detalhes-secao" class="mt-3 p-3 border rounded" style="display: none; background-color: #f8f9fa;">
+                <p><strong>Seção:</strong> <span id="secao-nome"></span></p>
+                <p><strong>Local:</strong> <span id="secao-local"></span></p>
+                <p><strong>Bairro:</strong> <span id="secao-bairro"></span></p>
+                <p><strong>Cidade:</strong> <span id="secao-cidade"></span></p>
+                <p><strong>UF:</strong> <span id="secao-uf"></span></p>
+            </div>
+        </div>
+        <!-- FIN ZONA E SECAO -->
+
+        <!-- INICIO ENDEREÇO ONDE TECLAR ENTER VAI PRA PROXIMO CAMPO -->
+        <div class="form-group">
+            <label for="endereco">Endereço</label>
+            <input type="text" name="endereco" id="endereco" class="form-control" maxlength="100" 
+                   placeholder="Rua, número, complemento..." autocomplete="off">
+        </div>
+        <!-- <div class="form-group">
+            <label for="bairro">Bairro *</label>
+            <select name="bairro" id="bairro" class="form-control" required onchange="mostrarDetalhesBairro()"></select>
+                <option value="">Selecione o Bairro</option>
+                {% for bairro in bairros %}
+                    <option value="{{ bairro.Codigo }}" data-lat="{{ bairro.Lat }}" data-lon="{{ bairro.Lon }}">{{ bairro.Nome }}</option>
+                {% endfor %}
+            </select>
+            <div id="detalhes-bairro" class="mt-2" style="display: none;">
+                <p><strong> - Lat:</strong> <span id="bairro-lati"></span></p>
+                <p><strong> - Lon:</strong> <span id="bairro-long"></span></p>
+            </div>
+        </div> -->
+        <!-- FIM CAMPO-->
+        <div class="form-group">
+            <label for="bairro">Bairro *</label>
+            <select name="bairro" id="bairro" class="form-select" required onchange="mostrarDetalhesBairro()">
+                <option value="">Selecione o Bairro</option>
+                {% for bairro in bairros %}
+                    <option value="{{ bairro.Codigo }}" 
+                            data-lat="{{ bairro.Lat }}" 
+                            data-lon="{{ bairro.Lon }}"
+                            data-reg="{{ bairro.Reg }}">
+                        {{ bairro.Nome }}
+                    </option>
+                {% endfor %}
+            </select>
+            <div id="detalhes-bairro" class="mt-3 p-3 border rounded" style="display: none; background-color: #f8f9fa;">
+                <p><strong>Bairro Selecionado:</strong> <span id="bairro-nome"></span></p>
+                <p class="text-muted d-none"><strong>Latitude:</strong> <span id="bairro-lati"></span></p>   <!-- escondida -->
+                <p class="text-muted d-none"><strong>Longitude:</strong> <span id="bairro-long"></span></p>  <!-- escondida -->
+                <p><strong>Regional:</strong> <span id="bairro-reg"></span></p>
+            </div>
+            <!-- CODIGO ANTIGO Q MOSTRA TUDO -->
+            <!--<div id="detalhes-bairro" class="mt-3 p-3 border rounded" style="display: none; background-color: #f8f9fa;">-->
+                <!--<p><strong>Bairro Selecionado:</strong> <span id="bairro-nome"></span></p>
+                <p><strong>Latitude:</strong> <span id="bairro-lati"></span></p>
+                <p><strong>Longitude:</strong> <span id="bairro-long"></span></p>
+                <p><strong>Regional:</strong> <span id="bairro-reg"></span></p>
+            </div>-->
+            <!-- FIM CODIGO ANTIGO Q MOSTRA TUDO -->
+        </div>
+
+        <!-- INICIO CAMPO PAI -->
+        <div class="form-group">
+            <label for="pai">Pai</label>
+            <input type="text" name="pai" id="pai" class="form-control" maxlength="100" 
+                   placeholder="Digite o nome do pai" autocomplete="off">
+        </div>
+        <!-- FIM CAMPO PAI -->
+
+        <!-- INICIO CAMPO MAE -->
+        <div class="form-group">
+            <label for="mae">Mãe</label>
+            <input type="text" name="mae" id="mae" class="form-control" maxlength="100" 
+                   placeholder="Digite o nome da mãe" autocomplete="off">
+        </div>
+        <!-- FIM CAMPO MAE -->
+
+        <!-- INICIO HORARIO MANUAL -->
+        <!--<div class="form-group">
+            <h4 style="font-weight: bold; margin-bottom: 10px;">INFORMAÇÕES DA VISITA</h4>
+            <label for="horario_fim">Horário da Visita</label>
+            <input type="time" name="horario_fim" id="horario_fim" class="form-control" required>
+        </div>-->
+        <!-- FIN HORARIO MANUAL -->
+        
+        <!-- INICIO ESCOLHA FISCAL -->
+        <!-- O CODIGO ABAIXO USA CHECKBOX Q PERMITE ESCOLHER VARIAS OPCOES -->
+        <!-- <div class="form-group">
+            <h4 style="font-weight: bold; margin-bottom: 10px;">ESCOLHA UM FISCAL</h4> -->
+            <!-- <label>Modalidades</label>-->
+            <!-- <div class="row"> -->
+                <!-- Coluna 1: 9 materiai --> 
+                <!-- <div class="col-md-4 col-6 mb-3">
+                    <div class="form-check">
+                        <input type="checkbox" name="fiscal_selecionado" value="Antonio Carlos" class="form-check-input" id="fiscal1">
+                        <label class="form-check-label" for="fiscal1">Antonio Carlos</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="fiscal_selecionado" value="José Carlos" class="form-check-input" id="fiscal2">
+                        <label class="form-check-label" for="fiscal2">José Carlos</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="fiscal_selecionado" value="Maria Silva" class="form-check-input" id="fiscal3">
+                        <label class="form-check-label" for="fiscal3">Maria Silva</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="fiscal_selecionado" value="Eduarda Pereira" class="form-check-input" id="fiscal4">
+                        <label class="form-check-label" for="fiscal4">Eduarda Pereira</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="fiscal_selecionado" value="Batista" class="form-check-input" id="fiscal5">
+                        <label class="form-check-label" for="fiscal5">Batista</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="fiscal_selecionado" value="Florinda" class="form-check-input" id="fiscal6">
+                        <label class="form-check-label" for="fiscal6">Florinda</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="fiscal_selecionado" value="Marieta" class="form-check-input" id="fiscal7">
+                        <label class="form-check-label" for="fiscal7">Marieta</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="fiscal_selecionado" value="Outro" class="form-check-input" id="fiscal8">
+                        <label class="form-check-label" for="fiscal8">Outro</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="fiscal_selecionado" value="Nenhum" class="form-check-input" id="fiscal9">
+                        <label class="form-check-label" for="fiscal9">Nenhum</label>
+                    </div>
+                </div> -->
+                <!-- Coluna 2: 8 materiais -->
+                <!-- <div class="col-md-4 col-6 mb-3">
+                    <div class="form-check">
+                        <input type="checkbox" name="modalidades_selecionados" value="Futsal" class="form-check-input" id="material10">
+                        <label class="form-check-label" for="material10">Futsal</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="modalidades_selecionados" value="Futsal D.A." class="form-check-input" id="material11">
+                        <label class="form-check-label" for="material11">Futsal D.A.</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="modalidades_selecionados" value="Futsal D.I." class="form-check-input" id="material12">
+                        <label class="form-check-label" for="material12">Futsal D.I.</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="modalidades_selecionados" value="Ginástica" class="form-check-input" id="material13">
+                        <label class="form-check-label" for="material13">Ginástica</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="modalidades_selecionados" value="Goalball" class="form-check-input" id="material14">
+                        <label class="form-check-label" for="material14">Goalball</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="modalidades_selecionados" value="Handebol Cad.Rodas" class="form-check-input" id="material15">
+                        <label class="form-check-label" for="material15">Handebol Cad.Rodas</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="modalidades_selecionados" value="Judô Adaptado" class="form-check-input" id="material16">
+                        <label class="form-check-label" for="material16">Judô Adaptado</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="modalidades_selecionados" value="Judô P/Cegos" class="form-check-input" id="material17">
+                        <label class="form-check-label" for="material17">Judo P/Cegos</label>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div> -->
+        <!-- FIN ESCOLHA FISCAL COM CHECKBOX -->
+
+        <!-- INICIO ESCOLHA FISCAL COM RADIO BUTTONS QUE PERMITE ESCOLHER APENAS UMA OPCAO-->
+        <!-- INICIO ESCOLHA FISCAL COM FOTO -->
+        <!--<div class="form-group">
+            <h4 style="font-weight: bold; margin-bottom: 15px; color: #d32f2f;">ESCOLHA APENAS UM FISCAL</h4>
+            <p style="font-size: 15px; margin-bottom: 20px; color: #555;">
+                <em>Selecione somente UM candidato ou "Nenhum". Obrigado pela participação!</em>
+            </p>
+                
+            <div class="row justify-content-start">
+                <div class="col-md-8 col-12">-->
+        
+                    <!-- Antonio Carlos -->
+                    <!--<div class="form-check mb-4 d-flex align-items-center">
+                        <input type="radio" name="fiscal_selecionado" value="Antonio Carlos" class="form-check-input me-3" id="fiscal1" required>
+                        <label class="form-check-label d-flex align-items-center" for="fiscal1">
+                            <img src="{{ url_for('static', filename='imagens/candidatos/antonio_carlos.png') }}" 
+                                    alt="Antonio Carlos" 
+                                    class="rounded-circle mx-4 shadow-sm"
+                                    style="width: 90px; height: 90px; object-fit: cover;">
+                            <span>Antonio Carlos</span>
+                        </label>
+                    </div>-->
+        
+                    <!-- José Carlos -->
+                    <!--<div class="form-check mb-4 d-flex align-items-center">
+                        <input type="radio" name="fiscal_selecionado" value="José Carlos" class="form-check-input me-3" id="fiscal2">
+                        <label class="form-check-label d-flex align-items-center" for="fiscal2">
+                            <img src="{{ url_for('static', filename='imagens/candidatos/jose_carlos.png') }}" 
+                                    alt="José Carlos" 
+                                    class="rounded-circle mx-4 shadow-sm"
+                                    style="width: 80px; height: 80px; object-fit: cover;">
+                            <span>José Carlos</span>
+                        </label>
+                    </div>-->
+        
+                    <!-- Maria Silva -->
+                    <!--<div class="form-check mb-4 d-flex align-items-center">
+                        <input type="radio" name="fiscal_selecionado" value="Maria Silva" class="form-check-input me-3" id="fiscal3">
+                        <label class="form-check-label d-flex align-items-center" for="fiscal3">
+                            <img src="{{ url_for('static', filename='imagens/candidatos/maria_silva.png') }}" 
+                                    alt="Maria Silva" 
+                                    class="rounded-circle mx-4 shadow-sm"
+                                    style="width: 80px; height: 80px; object-fit: cover;">
+                            <span>Maria Silva</span>
+                        </label>
+                    </div>-->
+        
+                    <!-- Eduarda Pereira -->
+                    <!--<div class="form-check mb-4 d-flex align-items-center">
+                        <input type="radio" name="fiscal_selecionado" value="Eduarda Pereira" class="form-check-input me-3" id="fiscal4">
+                        <label class="form-check-label d-flex align-items-center" for="fiscal4">
+                            <img src="{{ url_for('static', filename='imagens/candidatos/eduarda_pereira.png') }}" 
+                                    alt="Eduarda Pereira" 
+                                    class="rounded-circle mx-4 shadow-sm"
+                                    style="width: 80px; height: 80px; object-fit: cover;">
+                            <span>Eduarda Pereira</span>
+                        </label>
+                    </div>-->
+        
+                    <!-- Batista -->
+                    <!--<div class="form-check mb-4 d-flex align-items-center">
+                        <input type="radio" name="fiscal_selecionado" value="Batista" class="form-check-input me-3" id="fiscal5">
+                        <label class="form-check-label d-flex align-items-center" for="fiscal5">
+                            <img src="{{ url_for('static', filename='imagens/candidatos/batista.png') }}" 
+                                    alt="Batista" 
+                                    class="rounded-circle mx-4 shadow-sm"
+                                    style="width: 80px; height: 80px; object-fit: cover;">
+                            <span>Batista</span>
+                        </label>
+                    </div>-->
+        
+                    <!-- Florinda -->
+                    <!--<div class="form-check mb-4 d-flex align-items-center">
+                        <input type="radio" name="fiscal_selecionado" value="Florinda" class="form-check-input me-3" id="fiscal6">
+                        <label class="form-check-label d-flex align-items-center" for="fiscal6">
+                            <img src="{{ url_for('static', filename='imagens/candidatos/florinda.png') }}" 
+                                    alt="Florinda" 
+                                    class="rounded-circle mx-4 shadow-sm"
+                                    style="width: 80px; height: 80px; object-fit: cover;">
+                            <span>Florinda</span>
+                        </label>
+                    </div>-->
+        
+                    <!-- Marieta -->
+                    <!--<div class="form-check mb-4 d-flex align-items-center">
+                        <input type="radio" name="fiscal_selecionado" value="Marieta" class="form-check-input me-3" id="fiscal7">
+                        <label class="form-check-label d-flex align-items-center" for="fiscal7">
+                            <img src="{{ url_for('static', filename='imagens/candidatos/marieta.png') }}" 
+                                    alt="Marieta" 
+                                    class="rounded-circle mx-4 shadow-sm"
+                                    style="width: 80px; height: 80px; object-fit: cover;">
+                            <span>Marieta</span>
+                        </label>
+                    </div>-->
+        
+                    <!-- Sem Candidato -->
+                    <!--<div class="form-check mb-4">
+                        <input type="radio" name="fiscal_selecionado" value="Sem Candidato" class="form-check-input" id="fiscal8">
+                        <label class="form-check-label" for="fiscal8">Sem Candidato</label>
+                    </div>-->
+        
+                    <!-- Outro -->
+                    <!--<div class="form-check mb-4">
+                        <input type="radio" name="fiscal_selecionado" value="Outro" class="form-check-input" id="fiscal9">
+                        <label class="form-check-label" for="fiscal9">Outro</label>
+                    </div>
+        
+                </div>
+            </div>
+        </div>-->
+        <!-- FIM ESCOLHA FISCAL COM FOTO -->
+        <!-- fIN ESCOLHA FISCAL COM RADIO BUTTONS QUE PERMITE ESCOLHER APENAS UMA OPCAO-->
+
+        <!--<div class="form-group">
+            <label for="observacao">Outro Candidato</label>
+            <textarea name="observacao" id="observacao" class="form-control" rows="4" maxlength="150" placeholder="Digite até 150 caracteres"></textarea>
+        </div>-->
+        <!-- INICIO: TIREI PARA NOVA PESQUISA
+        <div class="form-group">
+            <h4 style="font-weight: bold; margin-bottom: 10px;">RECURSOS HUMANOS</h4>
+            <label>Professor ? *</label>
+            <div> -->
+                <!-- <input type="radio" name="prof_presente" value="Sim" class="form-check-input" required> Sim
+                <input type="radio" name="prof_presente" value="Não" class="form-check-input"> Não -->
+                <!--
+                <input type="radio" name="prof_presente" value="Sim" required> Sim
+                <input type="radio" name="prof_presente" value="Não"> Não
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Estagiário ?</label>
+            <div> -->
+                <!-- <input type="radio" name="prof_uniforme" value="Sim" class="form-check-input" required> Sim
+                <input type="radio" name="prof_uniforme" value="Não" class="form-check-input"> Não -->
+                <!-- <input type="radio" name="prof_uniforme" value="Sim"> Sim
+                <input type="radio" name="prof_uniforme" value="Não"> Não
+            </div>
+        </div> -->
+        <!-- <div class="form-group">
+            <label for="faltarh">Motivo Ausência do Professor/Estagiário</label>
+            <textarea name="faltarh" id="faltarh" class="form-control" rows="1" maxlength="100" placeholder="Digite até 100 caracteres"></textarea>
+        </div> -->
+        <!-- Novo Campo MinistrandoAula -->
+        <!-- <div class="form-group">
+            <label for="ministrando_aula">Quem Está Ministrando a Aula ? *</label>
+            <select name="ministrando_aula" id="ministrando_aula" class="form-control" required>
+                <option value="">Selecione Quem Está Ministrando a Aula</option>
+                <option value="Professor">Professor</option>
+                <option value="Estagiário">Estagiário</option>
+                <option value="Ambos">Ambos</option>
+            </select>
+        </div> -->
+        <!-- 
+        **<p>**Esta é uma frase **normal**.</p>**
+        **<p>**Esta é uma frase **<strong>com forte ênfase</strong>**.</p>**
+        **<p>**Esta é uma frase **<b>com destaque visual</b>**.</p>**
+        -->
+        <!-- Novo Campo Quantidade de Alunos -->
+        <!-- INICIO METAS -->
+        <!-- <div class="form-group">
+            <h4 style="font-weight: bold; margin-bottom: 10px;">METAS</h4>
+            <div class="form-group form-inline">
+                <label for="quantidade_alunos" style="font-weight: bold; margin-right: 10px;">Meta de Pessoas Atendidas *(Máximo de 99999):</label>
+                <input type="number" name="quantidade_alunos" id="quantidade_alunos" class="form-control" min="0" max="99999" required> -->
+                <!-- <input type="number" name="quantidade_alunos" id="quantidade_alunos" class="form-control" min="0" max="99999" required> -->
+            <!-- </div>
+        </div> -->
+        <!-- QTDE PESSOAS MATRICULADAS TURMA 1 -->
+        <!-- <div class="form-group"> -->
+            <!-- <h4 style="font-weight: bold; margin-bottom: 10px;">META DE ATENDIMENTO</h4> -->
+            <!-- <div class="form-group form-inline"> -->
+                <!-- <label for="qtde_turma1" style="font-weight: bold; margin-right: 10px;">Quantidade Pessoas Matriculadas da 1a. Turma (Máximo de 99999):</label> -->
+                <!-- <label for="qtde_turma1" style="font-weight: normal; margin-right: 10px;">Quantidade Pessoas Matriculadas da 1a. Turma (Máximo de 99999)</label>
+                <input type="number" name="qtde_turma1" id="qtde_turma1" class="form-control" min="0" max="99999"> -->
+                <!-- <input type="number" name="quantidade_alunos" id="quantidade_alunos" class="form-control" min="0" max="99999" required> -->
+            <!-- </div>
+        </div>
+        <div class="form-group"> -->
+            <!-- <h4 style="font-weight: bold; margin-bottom: 10px;">META DE ATENDIMENTO</h4> -->
+            <!--<div class="form-group form-inline">
+                <label for="qtde_turma2" style="font-weight: normal; margin-right: 10px;">Quantidade Pessoas Matriculadas da 2a. Turma (Máximo de 99999)</label>
+                <input type="number" name="qtde_turma2" id="qtde_turma2" class="form-control" min="0" max="99999"> -->
+                <!-- <input type="number" name="quantidade_alunos" id="quantidade_alunos" class="form-control" min="0" max="99999" required> -->
+            <!-- </div>
+        </div>
+        <div class="form-group"> -->
+            <!-- <h4 style="font-weight: bold; margin-bottom: 10px;">META DE ATENDIMENTO</h4> -->
+            <!-- <div class="form-group form-inline">
+                <label for="qtde_turma3" style="font-weight: normal; margin-right: 10px;">Quantidade Pessoas Matriculadas da 3a. Turma (Máximo de 99999)</label>
+                <input type="number" name="qtde_turma3" id="qtde_turma3" class="form-control" min="0" max="99999"> -->
+                <!-- <input type="number" name="quantidade_alunos" id="quantidade_alunos" class="form-control" min="0" max="99999" required> -->
+            <!-- </div>
+        </div>
+        <div class="form-group"> -->
+            <!-- <h4 style="font-weight: bold; margin-bottom: 10px;">META DE ATENDIMENTO</h4> -->
+            <!-- <div class="form-group form-inline">
+                <label for="pessoas_na_visita" style="font-weight: normal; margin-right: 10px;">Quantidade Pessoas Presentes no Momento da Visita (Máximo de 99999)</label>
+                <input type="number" name="pessoas_na_visita" id="pessoas_na_visita" class="form-control" min="0" max="99999"> -->
+                <!-- <input type="number" name="quantidade_alunos" id="quantidade_alunos" class="form-control" min="0" max="99999" required> -->
+            <!-- </div>
+        </div> -->
+        <!-- FIM METAS -->
+        <!-- INICIO MATERIAL GRAFICO -->
+        <!--<div class="form-group">
+            <h4 style="font-weight: bold; margin-bottom: 10px;">MATERIAL GRÁFICO</h4>
+            <label>Núcleo Possui Identificação do Projeto ? (banner, sinalizador, etc)</label>
+            <div>-->
+                <!-- <input type="radio" name="prof_presente" value="Sim" class="form-check-input" required> Sim
+                <input type="radio" name="prof_presente" value="Não" class="form-check-input"> Não -->
+                <!--<input type="radio" name="matl_graf" value="Sim"> Sim
+                <input type="radio" name="matl_graf" value="Não"> Não
+            </div>
+        </div>
+        <div class="form-group">-->
+            <!-- <h4 style="font-weight: bold; margin-bottom: 10px;">MATERIAL GRÁFICO</h4>-->
+            <!--<label>Núcleo Possui Material de Divulgação do Projeto ? (panfleto, cartaz, etc)</label>
+            <div>-->
+                <!-- <input type="radio" name="prof_presente" value="Sim" class="form-check-input" required> Sim
+                <input type="radio" name="prof_presente" value="Não" class="form-check-input"> Não -->
+                <!--<input type="radio" name="matl_divulg" value="Sim"> Sim
+                <input type="radio" name="matl_divulg" value="Não"> Não
+            </div>
+        </div>-->
+        <!-- FIM MATERIAL GRAFICO -->
+        <!-- INICIO MATL ESPORTIVO -->
+        <!-- <div class="form-group">
+            <h4 style="font-weight: bold; margin-bottom: 10px;">MATERIAL ESPORTIVO</h4>
+            <label for="matl_esportivo">Digite os Materiais Esportivos Utilizados</label>
+            <textarea name="matl_esportivo" id="matl_esportivo" class="form-control" rows="4" maxlength="150" placeholder="Digite até 150 caracteres"></textarea>
+        </div> -->
+        <!-- INICIO CONSIDERACAO FINAL -->
+        <!-- <div class="form-group">
+            <h4 style="font-weight: bold; margin-bottom: 10px;">CONSIDERAÇÕES FINAIS</h4>
+            <label for="txt_fim">Digite os Pontos Positivos e Negativos ou Algo Não Contemplado Anteriormente</label>
+            <textarea name="txt_fim" id="txt_fim" class="form-control" rows="4" maxlength="150" placeholder="Digite até 150 caracteres"></textarea>
+        </div>-->
+        <!-- FIM CONSIDERACAO FINAL -->
+        <!-- INICIO CARREGAR IMG -->
+        <!-- <div class="form-group">
+            <label for="foto">Foto da Visita - (máx. 5 MB)</label>
+            <input type="file" name="foto" id="foto" class="form-control-file" accept="image/*">
+        </div> -->
+        <!-- FIM CARREGAR IMG -->
+        <button type="submit" class="btn btn-primary mt-3">Salvar Questionário</button>
+        <!-- ABAIXO O BOTAO DE EXPORTAR QUEST-->
+        <!--<a href="{{ url_for('exportar_questionarios') }}" class="btn btn-success mt-3">Exportar Questionários para Excel</a>-->
+        <a href="{{ url_for('mapa') }}" class="btn btn-primary mt-3">Abrir Mapa</a>
+        <a href="{{ url_for('logout') }}" class="btn btn-secondary mt-3">Sair</a>
+    </form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 1. PULA PRO PRÓXIMO CAMPO COM ENTER
+        const inputs = document.querySelectorAll('input, select');
+        inputs.forEach((input, index) => {
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const nextInput = inputs[index + 1];
+                    if (nextInput) {
+                        nextInput.focus();
+                    }
+                }
+            });
+        });
+
+        // 2. PREENCHE DATA E HORÁRIO AUTOMATICAMENTE
+        const agora = new Date();
+        const dia = String(agora.getDate()).padStart(2, '0');
+        const mes = String(agora.getMonth() + 1).padStart(2, '0');
+        const ano = agora.getFullYear();
+        const dataAtualBR = `${dia}/${mes}/${ano}`;
+        document.getElementById('data').value = dataAtualBR;
+        
+        const horas = String(agora.getHours()).padStart(2, '0');
+        const minutos = String(agora.getMinutes()).padStart(2, '0');
+        const horarioAtual = `${horas}:${minutos}`;
+        document.getElementById('horario_fim').value = horarioAtual;
+
+        // 3. FUNÇÃO MOSTRAR DETALHES DO BAIRRO (mantém como está)
+        function mostrarDetalhesBairro() {
+            const select = document.getElementById('bairro');
+            const detalhesDiv = document.getElementById('detalhes-bairro');
+            const nomeSpan = document.getElementById('bairro-nome');
+            const latSpan = document.getElementById('bairro-lati');
+            const lonSpan = document.getElementById('bairro-long');
+            const regiaoSpan = document.getElementById('bairro-reg');
+
+            const selectedOption = select.options[select.selectedIndex];
+
+            if (selectedOption && selectedOption.value) {
+                nomeSpan.textContent = selectedOption.text;
+                latSpan.textContent = selectedOption.getAttribute('data-lat');
+                lonSpan.textContent = selectedOption.getAttribute('data-lon');
+                regiaoSpan.textContent = selectedOption.getAttribute('data-reg');
+                detalhesDiv.style.display = 'block';
+            } else {
+                detalhesDiv.style.display = 'none';
+            }
+        }
+
+        // === NOVO: DADOS DAS SEÇÕES (passados pelo Flask via Jinja) ===
+        const todasSecoes = {{ secoes | tojson }};
+
+        // === NOVO: CARREGA SEÇÕES QUANDO ESCOLHE A ZONA ===
+        function carregarSecoes() {
+            const zonaSelect = document.getElementById('zona');
+            const secaoSelect = document.getElementById('secao');
+            const detalhesDiv = document.getElementById('detalhes-secao');
+            
+            const zonaEscolhida = parseInt(zonaSelect.value);
+            
+            // Limpa o select de seções e esconde detalhes
+            secaoSelect.innerHTML = '<option value="">Selecione a Seção</option>';
+            detalhesDiv.style.display = 'none';
+            
+            if (isNaN(zonaEscolhida)) {
+                secaoSelect.disabled = true;
+                return;
+            }
+            
+            // Filtra seções da zona escolhida
+            const secoesFiltradas = todasSecoes.filter(s => s.Zona === zonaEscolhida);
+            
+            // Ordena por número da seção
+            secoesFiltradas.sort((a, b) => a.Secao - b.Secao);
+            
+            // Preenche o select com as seções filtradas
+            secoesFiltradas.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.Secao;
+                opt.textContent = s.Secao;
+                opt.dataset.local = s.Local || '';
+                opt.dataset.bairro = s.Bairro || '';
+                opt.dataset.cidade = s.Cidade || '';
+                opt.dataset.uf = s.Uf || '';
+                secaoSelect.appendChild(opt);
+            });
+            
+            secaoSelect.disabled = false;
+        }
+
+        // === NOVO: MOSTRA DETALHES DA SEÇÃO SELECIONADA ===
+        function mostrarDetalhesSecao() {
+            const secaoSelect = document.getElementById('secao');
+            const detalhesDiv = document.getElementById('detalhes-secao');
+            
+            const nomeSpan = document.getElementById('secao-nome');
+            const localSpan = document.getElementById('secao-local');
+            const bairroSpan = document.getElementById('secao-bairro');
+            const cidadeSpan = document.getElementById('secao-cidade');
+            const ufSpan = document.getElementById('secao-uf');
+            
+            const selectedOption = secaoSelect.options[secaoSelect.selectedIndex];
+            
+            if (selectedOption && selectedOption.value) {
+                nomeSpan.textContent = selectedOption.value;
+                localSpan.textContent = selectedOption.dataset.local || '-';
+                bairroSpan.textContent = selectedOption.dataset.bairro || '-';
+                cidadeSpan.textContent = selectedOption.dataset.cidade || '-';
+                ufSpan.textContent = selectedOption.dataset.uf || '-';
+                detalhesDiv.style.display = 'block';
+            } else {
+                detalhesDiv.style.display = 'none';
+            }
+        }
+
+        // === EVENTOS ===
+        // Bairro (já existia)
+        document.getElementById('bairro').addEventListener('change', mostrarDetalhesBairro);
+
+        // Zona → carrega seções
+        document.getElementById('zona').addEventListener('change', carregarSecoes);
+
+        // Seção → mostra detalhes
+        document.getElementById('secao').addEventListener('change', mostrarDetalhesSecao);
+
+        // Opcional: se quiser que ao carregar a página já esconda os detalhes
+        document.getElementById('detalhes-secao').style.display = 'none';
+    });
+
+</script>
+{% endblock %}
