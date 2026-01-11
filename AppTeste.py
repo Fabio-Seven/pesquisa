@@ -65,8 +65,8 @@ def save_excel(df, file_name):
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
-        nome_usuario = request.form["nome_usuario"].strip()
-        senha = request.form["senha"].encode('utf-8')
+        nome_usuario = request.form.get["nome_usuario",""].strip()
+        senha = request.form.get["senha",""].encode('utf-8')
 
         # Usuários de teste (remova depois ou use planilha criptografada)
         usuarios_teste = {
