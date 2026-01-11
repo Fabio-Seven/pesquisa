@@ -8,28 +8,59 @@ import re # LINHA ADD NA MÃO
 import folium          #  LINHA PARA O MAPA
 from folium import Choropleth       #  LINHA PARA O MAPA
 import json       #  LINHA PARA O MAPA
-
+import psycopg2  ### BIBLIOTECA PARA USAR ONLINE
+from flask import current_app    ### BIBLIOTECA PARA USAR ONLINE
 
 app = Flask(__name__)
 app.secret_key = "chave_secreta"  # Para mensagens flash
 #DATA_DIR = r"C:\Users\Fabio\Documents\Estudos\Python\SitePesquisa\dados_excel"  # Ajuste o caminho
 DATA_DIR = r"C:\Users\Fabio\Documents\Estudos\Python\P&R\dados_excel"
 
+# CONFIGURAÇÃO PARA TESTES ONLINE
+app.config['postgresql://pesquisas_1o3b_user:63eFGFoYuOIr0TqnujMmAyr9evGtNjSw@dpg-d5hsqt7gi27c7386harg-a/pesquisas_1o3b'] = os.environ.get('postgresql://pesquisas_1o3b_user:63eFGFoYuOIr0TqnujMmAyr9evGtNjSw@dpg-d5hsqt7gi27c7386harg-a/pesquisas_1o3b')  # Render injeta isso automaticamente
+
 # CODIGO PARA UPLOAD
 UPLOAD_FOLDER = r"C:\Users\Fabio\Documents\Estudos\Python\P&R\static\uploads"
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 MAX_FILE_SIZE = 2 * 1024 * 1024  # 2 MB em bytes
 
+# FUNCAO PARA CONECTAR BANCO  ONLINE
+def get_db_connection():
+    conn = psycopg2.connect(current_app.config['postgresql://pesquisas_1o3b_user:63eFGFoYuOIr0TqnujMmAyr9evGtNjSw@dpg-d5hsqt7gi27c7386harg-a/pesquisas_1o3b'])
+    return conn
+
+# FUNCAO ONLINE P/Salvar questionário no banco
+def save_questionario(data):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO questionarios (data, nome, numtit, biometria, dtnasc, cpf, zona, secao, pai, mae, endereco, bairro, latitude, longitude, regional, usuario)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    """, (data['Data'], data['Nome'], data['NumTit'], data['Biometria'], data['DtNasc'], data['CPF'], 
+          data['Zona'], data['Secao'], data['Pai'], data['Mãe'], data['Endereço'], data['Bairro'], 
+          data['Latitude'], data['Longitude'], data['Regional'], data['Usuario']))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+# FUNCAO ONLINE P/Carregar questionários pro mapa
+def load_questionarios():
+    conn = get_db_connection()
+    df = pd.read_sql("SELECT * FROM questionarios", conn)
+    conn.close()
+    return df
+
+# AS FUNCOES ABAIXO SÃO PARA APP LOCAL; PARA TESTES NO PC
 # Função para carregar uma planilha
-def load_excel(file_name):
-    try:
-        return pd.read_excel(os.path.join(DATA_DIR, file_name), engine='openpyxl')
-    except FileNotFoundError:
-        return pd.DataFrame()
+#def load_excel(file_name):
+    #try:
+        #return pd.read_excel(os.path.join(DATA_DIR, file_name), engine='openpyxl')
+    #except FileNotFoundError:
+        #return pd.DataFrame()
 
 # Função para salvar uma planilha
-def save_excel(df, file_name):
-    df.to_excel(os.path.join(DATA_DIR, file_name), index=False, engine='openpyxl')
+#def save_excel(df, file_name):
+    #df.to_excel(os.path.join(DATA_DIR, file_name), index=False, engine='openpyxl')
 
 # Rota para página inicial (login)
 # LOGIN PARA TESTE OFFLINE. TIREI PARA O LOGIN ABAIXO ONLINE
@@ -99,20 +130,26 @@ def questionario():
     # nucleos = load_excel("Nucleos.xlsx")   # LINHA ORIGINAL TABELA NUCLEOS
 
     # Carrega e PADRONIZA os nomes das colunas dos bairros
-    bairros_df = load_excel("TodosBairros.xlsx")
-    bairros = bairros_df.rename(columns={
-        "Bairro": "Nome",
-        "Latitude": "Lat",
-        "Longitude": "Lon",
-        "Reg": "Reg"
-    })
+    # COD ABAIXO É PARA TESTES NO PC
+    #bairros_df = load_excel("TodosBairros.xlsx")
+    #bairros = bairros_df.rename(columns={
+        #"Bairro": "Nome",
+        #"Latitude": "Lat",
+        #"Longitude": "Lon",
+        #"Reg": "Reg"
+    #})
+    
+    # FUNCAO PARA CARREGAR BANCO ONLINE
+    def get_db_connection():
+    conn = psycopg2.connect(current_app.config['postgresql://pesquisas_1o3b_user:63eFGFoYuOIr0TqnujMmAyr9evGtNjSw@dpg-d5hsqt7gi27c7386harg-a/pesquisas_1o3b'])
+    return conn
 
     ##bairros = load_excel("TodosBairros.xlsx")
+    # COD Q PEGA PLANILHAS DO PC
     alunos = load_excel("Alunos.xlsx")
     professores = load_excel("Professores.xlsx")
     projetos = load_excel("Projetos.xlsx")  # PLANILHA PROJETOS
     turnos = load_excel("Turnos.xlsx")  # PLANILHA TURNOS
-    
     secoes_df = load_excel("FortalZonSecLoc.xlsx")
     
     # Remove espaços em branco nos nomes das colunas (problema comum no Excel)
@@ -419,7 +456,22 @@ def questionario():
                                     ##usuario=session.get("nome_usuario", ""))
         
         # Salvar questionário
-        questionarios = load_excel("Questionarios.xlsx")
+        # FUNCAO PARA TESTES LOCAL; NO PC
+        #questionarios = load_excel("Questionarios.xlsx")
+
+        # Salvar questionário no banco
+        def save_questionario(data):
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO questionarios (data, nome, numtit, biometria, dtnasc, cpf, zona, secao, pai, mae, endereco, bairro, latitude, longitude, regional, usuario)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (data['Data'], data['Nome'], data['NumTit'], data['Biometria'], data['DtNasc'], data['CPF'], 
+                data['Zona'], data['Secao'], data['Pai'], data['Mãe'], data['Endereço'], data['Bairro'], 
+                data['Latitude'], data['Longitude'], data['Regional'], data['Usuario']))
+            conn.commit()
+            cur.close()
+            conn.close()
 
         # === INICIO FORÇA COLUNAS COMO TEXTO (evita notação científica) ===
         if not questionarios.empty:
@@ -499,73 +551,74 @@ def admin():
         return redirect(url_for("index"))
     
     # Verifica se é Admin
-    usuarios_df = load_excel("Usuarios.xlsx")
-    current_user = usuarios_df[usuarios_df["Nome_Usuario"] == session["nome_usuario"]]
-    if current_user.empty or current_user.iloc[0]["Tipo"] != "Admin":
-        flash("Acesso negado: apenas Admin pode gerenciar usuários.", "danger")
-        return redirect(url_for("questionario"))
+    # CODIGO COMENTADO PARA TESTES ONLINE
+    #usuarios_df = load_excel("Usuarios.xlsx")
+    #current_user = usuarios_df[usuarios_df["Nome_Usuario"] == session["nome_usuario"]]
+    #if current_user.empty or current_user.iloc[0]["Tipo"] != "Admin":
+        #flash("Acesso negado: apenas Admin pode gerenciar usuários.", "danger")
+        #return redirect(url_for("questionario"))
     
-    mensagem = None
+    #mensagem = None
     
-    if request.method == "POST":
-        acao = request.form.get("acao")
-        codigo = request.form.get("codigo")
+    #if request.method == "POST":
+        #acao = request.form.get("acao")
+        #codigo = request.form.get("codigo")
         
-        if acao == "adicionar" or acao == "editar":
-            nome_usuario = request.form.get("nome_usuario").strip()
-            nome_completo = request.form.get("usuario").strip().title()
-            tipo = request.form.get("tipo")
-            dica = request.form.get("dica").strip()
-            senha_plana = request.form.get("senha")
+        #if acao == "adicionar" or acao == "editar":
+            #nome_usuario = request.form.get("nome_usuario").strip()
+            #nome_completo = request.form.get("usuario").strip().title()
+            #tipo = request.form.get("tipo")
+            #dica = request.form.get("dica").strip()
+            #senha_plana = request.form.get("senha")
             
-            # Validações
-            if not nome_usuario or not nome_completo or not tipo or not senha_plana:
-                flash("Todos os campos são obrigatórios!", "danger")
-            elif usuarios_df[usuarios_df["Nome_Usuario"] == nome_usuario].any().any() and acao == "adicionar":
-                flash("Nome de usuário já existe!", "danger")
-            else:
+            ## Validações
+            #if not nome_usuario or not nome_completo or not tipo or not senha_plana:
+                #flash("Todos os campos são obrigatórios!", "danger")
+            #elif usuarios_df[usuarios_df["Nome_Usuario"] == nome_usuario].any().any() and acao == "adicionar":
+                #flash("Nome de usuário já existe!", "danger")
+            #else:
                 # Criptografa a senha
-                senha_hashed = bcrypt.hashpw(senha_plana.encode('utf-8'), bcrypt.gensalt())
+                #senha_hashed = bcrypt.hashpw(senha_plana.encode('utf-8'), bcrypt.gensalt())
                 
-                if acao == "adicionar":
-                    novo_codigo = (usuarios_df["Codigo"].max() + 1) if not usuarios_df.empty else 1
-                    nova_linha = pd.DataFrame([{
-                        "Codigo": novo_codigo,
-                        "Nome_Usuario": nome_usuario,
-                        "Usuario": nome_completo,
-                        "Tipo": tipo,
-                        "Dica": dica,
-                        "Senha": senha_hashed.decode('utf-8'),
-                        "Data_cadastro": datetime.now().strftime("%d/%m/%Y")
-                    }])
-                    usuarios_df = pd.concat([usuarios_df, nova_linha], ignore_index=True)
-                    flash("Usuário adicionado com sucesso!", "success")
+                #if acao == "adicionar":
+                    #novo_codigo = (usuarios_df["Codigo"].max() + 1) if not usuarios_df.empty else 1
+                    #nova_linha = pd.DataFrame([{
+                        #"Codigo": novo_codigo,
+                        #"Nome_Usuario": nome_usuario,
+                        #"Usuario": nome_completo,
+                        #"Tipo": tipo,
+                        #"Dica": dica,
+                        #"Senha": senha_hashed.decode('utf-8'),
+                        #"Data_cadastro": datetime.now().strftime("%d/%m/%Y")
+                    #}])
+                    #usuarios_df = pd.concat([usuarios_df, nova_linha], ignore_index=True)
+                    #flash("Usuário adicionado com sucesso!", "success")
                 
-                elif acao == "editar":
-                    codigo_int = int(codigo)
-                    usuarios_df.loc[usuarios_df["Codigo"] == codigo_int, "Nome_Usuario"] = nome_usuario
-                    usuarios_df.loc[usuarios_df["Codigo"] == codigo_int, "Usuario"] = nome_completo
-                    usuarios_df.loc[usuarios_df["Codigo"] == codigo_int, "Tipo"] = tipo
-                    usuarios_df.loc[usuarios_df["Codigo"] == codigo_int, "Dica"] = dica
-                    if senha_plana:  # só altera senha se preenchida
-                        usuarios_df.loc[usuarios_df["Codigo"] == codigo_int, "Senha"] = senha_hashed.decode('utf-8')
-                    flash("Usuário atualizado com sucesso!", "success")
+                #elif acao == "editar":
+                    #codigo_int = int(codigo)
+                    #usuarios_df.loc[usuarios_df["Codigo"] == codigo_int, "Nome_Usuario"] = nome_usuario
+                    ##usuarios_df.loc[usuarios_df["Codigo"] == codigo_int, "Usuario"] = nome_completo
+                    #usuarios_df.loc[usuarios_df["Codigo"] == codigo_int, "Tipo"] = tipo
+                    #usuarios_df.loc[usuarios_df["Codigo"] == codigo_int, "Dica"] = dica
+                    #if senha_plana:  # só altera senha se preenchida
+                        #usuarios_df.loc[usuarios_df["Codigo"] == codigo_int, "Senha"] = senha_hashed.decode('utf-8')
+                    #flash("Usuário atualizado com sucesso!", "success")
                 
-                save_excel(usuarios_df, "Usuarios.xlsx")
+                #save_excel(usuarios_df, "Usuarios.xlsx")
         
-        elif acao == "excluir":
-            codigo_int = int(codigo)
-            usuarios_df = usuarios_df[usuarios_df["Codigo"] != codigo_int]
-            # Reindexa códigos
-            usuarios_df["Codigo"] = range(1, len(usuarios_df) + 1)
-            save_excel(usuarios_df, "Usuarios.xlsx")
-            flash("Usuário excluído com sucesso!", "success")
+        #elif acao == "excluir":
+            #codigo_int = int(codigo)
+            #usuarios_df = usuarios_df[usuarios_df["Codigo"] != codigo_int]
+            ## Reindexa códigos
+            #usuarios_df["Codigo"] = range(1, len(usuarios_df) + 1)
+            #save_excel(usuarios_df, "Usuarios.xlsx")
+            #flash("Usuário excluído com sucesso!", "success")
     
     # Carrega usuários atualizados
-    usuarios_df = load_excel("Usuarios.xlsx")
-    usuarios = usuarios_df.to_dict('records')
+    #usuarios_df = load_excel("Usuarios.xlsx")
+    #usuarios = usuarios_df.to_dict('records')
     
-    return render_template("admin.html", usuarios=usuarios, usuario_logado=session["nome_usuario"])
+    #return render_template("admin.html", usuarios=usuarios, usuario_logado=session["nome_usuario"])
 
 #import folium
 #from folium import Choropleth
@@ -578,7 +631,15 @@ def mapa():
         return redirect(url_for("index"))
     
     # Verifica se é Admin (ou quem você quiser que veja o mapa)
-    usuarios_df = load_excel("Usuarios.xlsx")
+    # LINHA ABAIXO PARA TESTES NO PC
+    # usuarios_df = load_excel("Usuarios.xlsx")
+    # Carregar questionários pro mapa
+    def load_questionarios():
+        conn = get_db_connection()
+        df = pd.read_sql("SELECT * FROM questionarios", conn)
+        conn.close()
+        return df
+    
     current_user = usuarios_df[usuarios_df["Nome_Usuario"] == session["nome_usuario"]]
     
     # TESTA SE USUARIO É VAZIO
@@ -597,7 +658,10 @@ def mapa():
         return redirect(url_for("questionario"))
 
     # Carrega os dados
-    questionarios = load_excel("Questionarios.xlsx")
+    # COD ANTIGO PARA TESTES NO PC
+    #questionarios = load_excel("Questionarios.xlsx")
+
+
     if questionarios.empty:
         flash("Nenhum cadastro ainda para mostrar no mapa.", "info")
         return render_template("mapa_vazio.html")  # ou só uma mensagem
@@ -803,15 +867,16 @@ def mapa():
 # Rota para exportar questionários para Excel
 @app.route("/exportar_questionarios")
 def exportar_questionarios():
-    questionarios = load_excel("Questionarios.xlsx")
-    if questionarios.empty:
-        questionarios = pd.DataFrame({"Mensagem": ["Nenhum Questionário Encontrado Para Exportação."]})
+    # COD PARA TESTES NO PC OFFLINE
+    #questionarios = load_excel("Questionarios.xlsx")
+    #if questionarios.empty:
+        #questionarios = pd.DataFrame({"Mensagem": ["Nenhum Questionário Encontrado Para Exportação."]})
     
-    os.makedirs("exportados", exist_ok=True)
-    excel_path = "exportados/questionarios.xlsx"
-    questionarios.to_excel(excel_path, index=False, engine='openpyxl')
-    print(f"Planilha Salva Em: {excel_path}")
-    return send_file(excel_path, as_attachment=True)
+    #os.makedirs("exportados", exist_ok=True)
+    #excel_path = "exportados/questionarios.xlsx"
+    #questionarios.to_excel(excel_path, index=False, engine='openpyxl')
+    #print(f"Planilha Salva Em: {excel_path}")
+    #return send_file(excel_path, as_attachment=True)
 
 @app.route("/logout")
 def logout():
@@ -823,24 +888,25 @@ def logout():
 # Rota para exportar alunos para Excel
 @app.route("/exportar_excel")
 def exportar_excel():
-    alunos = load_excel("Alunos.xlsx")
-    amp = load_excel("Aluno_Modalidade_Polo.xlsx")
-    modalidades = load_excel("Modalidades.xlsx")
-    polos = load_excel("Polos.xlsx")
+    # COD PARA TESTES NO PC OFFLINE
+    #alunos = load_excel("Alunos.xlsx")
+    #amp = load_excel("Aluno_Modalidade_Polo.xlsx")
+    #modalidades = load_excel("Modalidades.xlsx")
+    #polos = load_excel("Polos.xlsx")
     
-    df = alunos.merge(amp, left_on="Codigo", right_on="aluno_codigo", how="left")
-    df = df.merge(modalidades, left_on="modalidade_codigo", right_on="Codigo", how="left", suffixes=("", "_mod"))
-    df = df.merge(polos, left_on="polo_codigo", right_on="Codigo", how="left", suffixes=("", "_polo"))
+    #df = alunos.merge(amp, left_on="Codigo", right_on="aluno_codigo", how="left")
+    #df = df.merge(modalidades, left_on="modalidade_codigo", right_on="Codigo", how="left", suffixes=("", "_mod"))
+    #df = df.merge(polos, left_on="polo_codigo", right_on="Codigo", how="left", suffixes=("", "_polo"))
     
-    df = df[["Codigo", "Nome", "Data_nascimento", "Modalidade", "Nome_polo", "Endereco"]]
-    if df.empty:
-        df = pd.DataFrame({"Mensagem": ["Nenhum dado encontrado para exportação."]})
+    #df = df[["Codigo", "Nome", "Data_nascimento", "Modalidade", "Nome_polo", "Endereco"]]
+    #if df.empty:
+        #df = pd.DataFrame({"Mensagem": ["Nenhum dado encontrado para exportação."]})
     
-    os.makedirs("exportados", exist_ok=True)
-    excel_path = "exportados/alunos_cadastrados.xlsx"
-    df.to_excel(excel_path, index=False, engine='openpyxl')
-    print(f"Planilha salva em: {excel_path}")
-    return send_file(excel_path, as_attachment=True)
+    #os.makedirs("exportados", exist_ok=True)
+    #excel_path = "exportados/alunos_cadastrados.xlsx"
+    #df.to_excel(excel_path, index=False, engine='openpyxl')
+    #print(f"Planilha salva em: {excel_path}")
+    #return send_file(excel_path, as_attachment=True)
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5001)
